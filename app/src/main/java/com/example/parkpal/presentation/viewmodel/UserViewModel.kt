@@ -22,4 +22,16 @@ class UserViewModel @Inject constructor(
             userRepository.insertUser(user)
         }
     }
+
+    fun updateUser(user: User) {
+        viewModelScope.launch {
+            userRepository.updateUser(user)
+        }
+    }
+
+    fun deleteUser(user: User) {
+        viewModelScope.launch {
+            userRepository.deleteUser(user)
+        }
+    }
 }

@@ -2,6 +2,8 @@ package com.example.parkpal.data
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.parkpal.data.dao.CarDao
+import com.example.parkpal.data.dao.ParkingLocationDao
 import com.example.parkpal.data.dao.UserDao
 import com.example.parkpal.data.entity.UserEntity
 
@@ -14,4 +16,6 @@ import com.example.parkpal.data.entity.UserEntity
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun carDao(): CarDao
+    abstract fun parkingLocationDao(): ParkingLocationDao
 }
