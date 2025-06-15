@@ -11,6 +11,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,13 +26,17 @@ import com.example.parkpal.domain.model.User
 
 @Composable
 fun UserInfoScreen(
-    userViewModel: UserViewModel = hiltViewModel()
+    userViewModel: UserViewModel = hiltViewModel(),
+    onSaveUser: (Long) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var birthDate by remember { mutableStateOf("") }
+    val userId by userViewModel.userId.collectAsState()
+
+    LaunchedEffect(userId) { userId?.let { onSaveUser(it) } }
 
     Column(
         modifier = Modifier
@@ -91,7 +97,7 @@ fun UserInfoScreen(
                 val user = User(
                     name = name,
                     email = email,
-                    password = null, // Assuming password is optional
+                    password = null,
                     phoneNumber = phoneNumber,
                     city = city,
                     birthDate = birthDate

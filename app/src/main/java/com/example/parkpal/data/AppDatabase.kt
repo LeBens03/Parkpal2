@@ -5,13 +5,17 @@ import androidx.room.RoomDatabase
 import com.example.parkpal.data.dao.CarDao
 import com.example.parkpal.data.dao.ParkingLocationDao
 import com.example.parkpal.data.dao.UserDao
+import com.example.parkpal.data.entity.CarEntity
+import com.example.parkpal.data.entity.ParkingLocationEntity
 import com.example.parkpal.data.entity.UserEntity
 
 @Database(
     entities = [
         UserEntity::class,
+        CarEntity::class,
+        ParkingLocationEntity::class
     ],
-    version = 1,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -25,6 +25,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "parkpal_database"
         )
+            .fallbackToDestructiveMigration()
             .build()
     }
 

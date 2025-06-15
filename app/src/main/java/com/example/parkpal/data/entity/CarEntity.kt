@@ -24,8 +24,8 @@ import androidx.room.PrimaryKey
 )
 data class CarEntity(
     @PrimaryKey(autoGenerate = true)
-    val carId: Int = 0,
-    val userId: Int, // Foreign key to User table
+    val carId: Long = 0,
+    val userId: Long = 0, // Foreign key to User table
     val brand: String,
     val model: String,
     val year: Int,

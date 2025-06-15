@@ -13,9 +13,9 @@ import javax.inject.Singleton
 @Singleton
 class UserRepository @Inject constructor(private val userDao: UserDao) {
 
-    suspend fun insertUser(user: User) {
+    suspend fun insertUser(user: User) : Long {
         Log.d("UserRepository", "Insert user: $user")
-        userDao.insertUser(user.toUserEntity())
+        return userDao.insertUser(user.toUserEntity())
     }
 
     suspend fun updateUser(user: User) {
