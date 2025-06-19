@@ -26,7 +26,7 @@ import com.example.parkpal.ui.theme.ParkpalTheme
 import com.example.parkpal.ui.theme.SpaceMedium
 
 @Composable
-fun WelcomeScreen(onContinueClicked: () -> Unit = {}) {
+fun WelcomeScreen(onContinueClicked: () -> Unit ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +66,7 @@ fun WelcomeScreen(onContinueClicked: () -> Unit = {}) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Continue Button
-        Button(onClick = onContinueClicked) {
+        Button(onClick = { onContinueClicked() }) {
             Text(text = stringResource(id = R.string.continue_button_text))
         }
     }
@@ -76,6 +76,8 @@ fun WelcomeScreen(onContinueClicked: () -> Unit = {}) {
 @Composable
 fun WelcomeScreenPreview() {
     ParkpalTheme {
-        WelcomeScreen()
+        WelcomeScreen(
+            onContinueClicked = {}
+        )
     }
 }

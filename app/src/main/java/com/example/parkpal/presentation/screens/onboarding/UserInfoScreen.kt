@@ -1,5 +1,6 @@
 package com.example.parkpal.presentation.screens.onboarding
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,20 +24,24 @@ import androidx.compose.ui.unit.dp
 import com.example.parkpal.presentation.viewmodel.UserViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.parkpal.domain.model.User
+import androidx.compose.runtime.livedata.observeAsState
 
 @Composable
 fun UserInfoScreen(
-    userViewModel: UserViewModel = hiltViewModel(),
-    onSaveUser: (Long) -> Unit
+    userViewModel: UserViewModel,
+    onSaveUser: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var birthDate by remember { mutableStateOf("") }
-    val userId by userViewModel.userId.collectAsState()
 
-    LaunchedEffect(userId) { userId?.let { onSaveUser(it) } }
+    val isLoading by userViewModel.isLoading.collectAsState()
+    val errorMessage by userViewModel.errorMessage.collectAsState(initial = null)
+
+    val current by userViewModel.currentUser.observeAsState()
+    Log.d("UserInfoScreen", "Current user: $current")
 
     Column(
         modifier = Modifier
@@ -103,6 +108,7 @@ fun UserInfoScreen(
                     birthDate = birthDate
                 )
                 userViewModel.insertUser(user)
+                onSaveUser()
             },
             modifier = Modifier.align(Alignment.End)
         ) {
