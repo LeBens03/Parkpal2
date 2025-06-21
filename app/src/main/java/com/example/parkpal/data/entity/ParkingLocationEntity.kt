@@ -25,8 +25,8 @@ import androidx.room.PrimaryKey
 data class ParkingLocationEntity(
     @PrimaryKey(autoGenerate = true)
     val parkingLocationId: Long = 0,
-    val userId: Long, // Foreign key to User table
-    val carId: Long, // Foreign key to Car table
+    val userId: Long,
+    val carId: Long,
     val latitude: Double,
     val longitude: Double,
     val timestamp: String

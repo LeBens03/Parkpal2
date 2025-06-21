@@ -13,9 +13,9 @@ import javax.inject.Singleton
 @Singleton
 class CarRepository @Inject constructor(private val carDao: CarDao) {
 
-    suspend fun insertCar(car: Car) {
+    suspend fun insertCar(car: Car) : Long {
         Log.d("CarRepository", "Insert car: $car")
-        carDao.insertCar(car.toCarEntity())
+        return carDao.insertCar(car.toCarEntity())
     }
 
     suspend fun updateCar(car: Car) {

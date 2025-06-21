@@ -48,6 +48,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.fragment.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -88,4 +91,12 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.runtime.livedata)
+
+    // Google Maps dependencies
+    implementation(libs.maps.utils)
+    implementation(libs.maps.utils.ktx)
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+
 }
