@@ -1,11 +1,17 @@
 package com.example.parkpal
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.parkpal.presentation.BottomNavDestination
+import com.example.parkpal.presentation.BottomNavigationBar
 import com.example.parkpal.presentation.screens.main.HomeScreen
 import com.example.parkpal.presentation.screens.onboarding.CarInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.GetStartedScreen
@@ -17,39 +23,73 @@ import com.example.parkpal.presentation.viewmodel.UserViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
-
     val userViewModel: UserViewModel = hiltViewModel()
     val carViewModel: CarViewModel = hiltViewModel()
 
-    NavHost(navController = navController, startDestination = "welcome") {
-        composable("welcome") { WelcomeScreen(
-            onContinueClicked = { navController.navigate("userInfo") }
-        ) }
+    // List of destinations where the Bottom Navigation Bar is visible
+    val bottomNavDestinations = listOf(
+        BottomNavDestination.MyCar,
+        BottomNavDestination.ParkingHistory,
+        BottomNavDestination.Profile
+    )
 
-        composable("userInfo") { UserInfoScreen(
-            userViewModel = userViewModel,
-            onSaveUser = { navController.navigate("carInfo") }
-        ) }
+    val currentBackStackEntry = navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry.value?.destination?.route
 
-        composable("carInfo") { CarInfoScreen(
-            userViewModel = userViewModel,
-            carViewModel = carViewModel,
-            onCarSaved = { navController.navigate("getStarted") }
-        ) }
+    // Determine if the bottom navigation bar should be shown
+    val shouldShowBottomNav = bottomNavDestinations.any { it.route == currentRoute }
 
-        composable("getStarted") { GetStartedScreen(
-            onSignUpClick = { navController.navigate("signUp") },
-            onHomeClick = { navController.navigate("home") }
-        ) }
+    Scaffold(
+        bottomBar = {
+            if (shouldShowBottomNav) {
+                BottomNavigationBar(
+                    currentDestination = bottomNavDestinations.find { it.route == currentRoute } ?: BottomNavDestination.MyCar,
+                    onDestinationClicked = { destination ->
+                        navController.navigate(destination.route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "welcome",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("welcome") { WelcomeScreen(
+                onContinueClicked = { navController.navigate("userInfo") }
+            ) }
 
-        composable("signUp") { SignUpScreen(
-            userViewModel = userViewModel,
-            onSignUp = { navController.navigate("home") },
-            onCancel = { navController.navigate("getStarted") }
-        ) }
+            composable("userInfo") { UserInfoScreen(
+                userViewModel = userViewModel,
+                onSaveUser = { navController.navigate("carInfo") }
+            ) }
 
-        composable("home") { HomeScreen(
-            carViewModel = carViewModel
-        ) }
+            composable("carInfo") { CarInfoScreen(
+                userViewModel = userViewModel,
+                carViewModel = carViewModel,
+                onCarSaved = { navController.navigate("getStarted") }
+            ) }
+
+            composable("getStarted") { GetStartedScreen(
+                onSignUpClick = { navController.navigate("signUp") },
+                onHomeClick = { navController.navigate(BottomNavDestination.MyCar.route) }
+            ) }
+
+            composable("signUp") { SignUpScreen(
+                userViewModel = userViewModel,
+                onSignUp = { navController.navigate(BottomNavDestination.MyCar.route) },
+                onCancel = { navController.navigate("getStarted") }
+            ) }
+
+            // Bottom Navigation destinations
+            composable(BottomNavDestination.MyCar.route) { HomeScreen(carViewModel = carViewModel) }
+            //composable(BottomNavDestination.ParkingHistory.route) { ParkingHistoryScreen() }
+            //composable(BottomNavDestination.Profile.route) { ProfileScreen() }
+        }
     }
 }

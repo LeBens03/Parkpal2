@@ -1,6 +1,8 @@
 package com.example.parkpal.presentation.screens.main
 
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,7 +34,13 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.core.net.toUri
+import com.example.parkpal.presentation.BottomSheetContent
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     mapViewModel: MapViewModel = hiltViewModel(),
@@ -41,12 +49,22 @@ fun HomeScreen(
     val state = mapViewModel.state
     val uiSettings = remember { MapUiSettings(
         zoomControlsEnabled = false,
+        zoomGesturesEnabled = true,
+        compassEnabled = true,
+        myLocationButtonEnabled = true
     ) }
-    val currentCar by carViewModel.currentCar.observeAsState()
 
-    Log.d("HomeScreen", "Current car: $currentCar")
-    Log.d("HomeScreen", "User location: ${state.userLocation}")
-    Log.d("HomeScreen", "Parking location: ${state.parkingLocation}")
+    val parkingMarkerState = state.parkingLocation?.let { rememberMarkerState(position = LatLng(it.latitude, it.longitude)) }
+
+    val defaultCityLatLng = LatLng(45.0703, 7.6869)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultCityLatLng, 12f) //
+    }
+
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
+    val currentCar by carViewModel.currentCar.observeAsState()
 
     var permissionsGranted by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -58,6 +76,29 @@ fun HomeScreen(
                     permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
         }
     )
+
+    val address = state.parkingLocation?.let { parkingLoc ->
+        Geocoder(context).getFromLocation(parkingLoc.latitude, parkingLoc.longitude, 1)
+            ?.firstOrNull()?.getAddressLine(0) ?: "Unknown Address"
+    }
+
+    val distance = state.userLocation?.let { userLoc ->
+        state.parkingLocation?.let { parkingLoc ->
+            val results = FloatArray(1)
+            android.location.Location.distanceBetween(
+                userLoc.latitude, userLoc.longitude,
+                parkingLoc.latitude, parkingLoc.longitude,
+                results
+            )
+            results[0] / 1000 // Distance in kilometers
+        }
+    }
+
+    Log.d("HomeScreen", "Current car: $currentCar")
+    Log.d("HomeScreen", "User location: ${state.userLocation}")
+    Log.d("HomeScreen", "Parking location: ${state.parkingLocation}")
+    Log.d("HomeScreen", "Address: $address")
+    Log.d("HomeScreen", "Distance: $distance")
 
     LaunchedEffect(Unit) {
         val fineLocationStatus = ContextCompat.checkSelfPermission(
@@ -89,13 +130,6 @@ fun HomeScreen(
         } else {
             Log.e("HomeScreen", "Permissions not granted")
         }
-    }
-
-    val parkingMarkerState = state.parkingLocation?.let { rememberMarkerState(position = LatLng(it.latitude, it.longitude)) }
-
-    val defaultCityLatLng = LatLng(45.0703, 7.6869)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(defaultCityLatLng, 12f) //
     }
 
     LaunchedEffect(state.userLocation) {
@@ -144,9 +178,37 @@ fun HomeScreen(
                 Marker(
                     state = parkingMarkerState,
                     title = "Parked Here",
-                    snippet = "Your car's location"
+                    snippet = "Your car's location",
+                    onClick = {
+                        showBottomSheet = true
+                        true
+                    }
                 )
             }
+        }
+    }
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showBottomSheet = false },
+            sheetState = sheetState
+        ) {
+            BottomSheetContent(
+                distance = distance,
+                address = address,
+                onNavigateClick = {
+                    val uri =
+                        "google.navigation:q=${state.parkingLocation?.latitude},${state.parkingLocation?.longitude}".toUri()
+                    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                        setPackage("com.google.android.apps.maps")
+                    }
+                    context.startActivity(intent)
+                },
+                onArrivedClick = {
+                    mapViewModel.onEvent(MapEvent.OnParkingLocationClicked(state.parkingLocation!!))
+                    showBottomSheet = false
+                },
+            )
         }
     }
 }
