@@ -99,4 +99,6 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
 
+    // Gson dependencies
+    implementation(libs.gson)
 }

@@ -6,6 +6,7 @@ import com.example.parkpal.data.AppDatabase
 import com.example.parkpal.data.dao.CarDao
 import com.example.parkpal.data.dao.ParkingLocationDao
 import com.example.parkpal.data.dao.UserDao
+import com.example.parkpal.data.dao.ParkingHistoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,4 +38,7 @@ object DatabaseModule {
 
     @Provides
     fun provideParkingLocationDao(database: AppDatabase) : ParkingLocationDao = database.parkingLocationDao()
+
+    @Provides
+    fun provideParkingHistoryDao(database: AppDatabase) : ParkingHistoryDao = database.parkingHistoryDao()
 }

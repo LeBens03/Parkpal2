@@ -24,6 +24,7 @@ mapsUtilsKtx = "5.1.1"
 mapsCompose = "6.4.1"
 play-services-maps = "19.2.0"
 play-services-location = "21.3.0"
+gson = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -70,6 +71,8 @@ maps-utils-ktx = { group = "com.google.maps.android", name = "maps-utils-ktx", v
 maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "play-services-maps" }
+# Gson dependencies
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

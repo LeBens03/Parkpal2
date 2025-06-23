@@ -2,9 +2,11 @@ package com.example.parkpal.di
 
 import android.content.Context
 import com.example.parkpal.data.dao.CarDao
+import com.example.parkpal.data.dao.ParkingHistoryDao
 import com.example.parkpal.data.dao.ParkingLocationDao
 import com.example.parkpal.data.dao.UserDao
 import com.example.parkpal.domain.repository.CarRepository
+import com.example.parkpal.domain.repository.ParkingHistoryRepository
 import com.example.parkpal.domain.repository.ParkingLocationRepository
 import com.example.parkpal.domain.repository.UserRepository
 import com.example.parkpal.presentation.UserLocationImpl
@@ -54,5 +56,11 @@ object RepositoryModule {
         fusedLocationClient: FusedLocationProviderClient
     ): UserLocationImpl {
         return UserLocationImpl(context, fusedLocationClient)
+    }
+
+    @Provides
+    @Singleton
+    fun provideParkingHistoryRepository(parkingHistoryDao: ParkingHistoryDao) : ParkingHistoryRepository {
+        return ParkingHistoryRepository(parkingHistoryDao)
     }
 }

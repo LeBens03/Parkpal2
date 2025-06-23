@@ -13,18 +13,22 @@ import androidx.navigation.compose.rememberNavController
 import com.example.parkpal.presentation.BottomNavDestination
 import com.example.parkpal.presentation.BottomNavigationBar
 import com.example.parkpal.presentation.screens.main.HomeScreen
+import com.example.parkpal.presentation.screens.main.ParkingHistoryScreen
+import com.example.parkpal.presentation.screens.main.ProfileScreen
 import com.example.parkpal.presentation.screens.onboarding.CarInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.GetStartedScreen
 import com.example.parkpal.presentation.screens.onboarding.SignUpScreen
 import com.example.parkpal.presentation.screens.onboarding.UserInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.WelcomeScreen
 import com.example.parkpal.presentation.viewmodel.CarViewModel
+import com.example.parkpal.presentation.viewmodel.ParkingHistoryViewModel
 import com.example.parkpal.presentation.viewmodel.UserViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val userViewModel: UserViewModel = hiltViewModel()
     val carViewModel: CarViewModel = hiltViewModel()
+    val parkingHistoryViewModel: ParkingHistoryViewModel = hiltViewModel()
 
     // List of destinations where the Bottom Navigation Bar is visible
     val bottomNavDestinations = listOf(
@@ -86,10 +90,20 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 onCancel = { navController.navigate("getStarted") }
             ) }
 
-            // Bottom Navigation destinations
-            composable(BottomNavDestination.MyCar.route) { HomeScreen(carViewModel = carViewModel) }
-            //composable(BottomNavDestination.ParkingHistory.route) { ParkingHistoryScreen() }
-            //composable(BottomNavDestination.Profile.route) { ProfileScreen() }
+            composable(BottomNavDestination.MyCar.route) { HomeScreen(
+                carViewModel = carViewModel,
+                parkingHistoryViewModel = parkingHistoryViewModel,
+                onNavigateToParkingHistory = { navController.navigate(BottomNavDestination.ParkingHistory.route) }
+            ) }
+
+            composable(BottomNavDestination.ParkingHistory.route) { ParkingHistoryScreen(
+                userViewModel = userViewModel,
+                onNavigateToProfile = { navController.navigate(BottomNavDestination.Profile.route) }
+            ) }
+
+            composable(BottomNavDestination.Profile.route) { ProfileScreen(
+
+            ) }
         }
     }
 }

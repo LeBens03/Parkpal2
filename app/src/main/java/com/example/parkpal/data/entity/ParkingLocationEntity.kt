@@ -29,5 +29,7 @@ data class ParkingLocationEntity(
     val carId: Long,
     val latitude: Double,
     val longitude: Double,
-    val timestamp: String
+    val address: String,
+    val timestamp: Long,
+    val duration: Long
 )

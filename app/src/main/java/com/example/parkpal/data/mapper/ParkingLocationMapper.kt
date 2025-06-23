@@ -10,7 +10,9 @@ fun ParkingLocationEntity.toParkingLocation(): ParkingLocation {
         carId = carId,
         latitude = latitude,
         longitude = longitude,
-        timestamp = timestamp
+        timestamp = timestamp,
+        address = address,
+        duration = duration
     )
 }
 
@@ -21,6 +23,8 @@ fun ParkingLocation.toParkingLocationEntity(): ParkingLocationEntity {
         carId = carId,
         latitude = latitude,
         longitude = longitude,
-        timestamp = timestamp
+        timestamp = timestamp,
+        address = address,
+        duration = duration
     )
 }

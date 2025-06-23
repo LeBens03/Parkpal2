@@ -2,7 +2,6 @@ package com.example.parkpal.presentation.screens.main
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Geocoder
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,14 +36,18 @@ import com.google.maps.android.compose.rememberMarkerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.collectAsState
 import androidx.core.net.toUri
 import com.example.parkpal.presentation.BottomSheetContent
+import com.example.parkpal.presentation.viewmodel.ParkingHistoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     mapViewModel: MapViewModel = hiltViewModel(),
-    carViewModel: CarViewModel
+    carViewModel: CarViewModel,
+    parkingHistoryViewModel: ParkingHistoryViewModel,
+    onNavigateToParkingHistory: () -> Unit
 ) {
     val state = mapViewModel.state
     val uiSettings = remember { MapUiSettings(
@@ -77,28 +80,19 @@ fun HomeScreen(
         }
     )
 
-    val address = state.parkingLocation?.let { parkingLoc ->
-        Geocoder(context).getFromLocation(parkingLoc.latitude, parkingLoc.longitude, 1)
-            ?.firstOrNull()?.getAddressLine(0) ?: "Unknown Address"
-    }
-
-    val distance = state.userLocation?.let { userLoc ->
-        state.parkingLocation?.let { parkingLoc ->
-            val results = FloatArray(1)
-            android.location.Location.distanceBetween(
-                userLoc.latitude, userLoc.longitude,
-                parkingLoc.latitude, parkingLoc.longitude,
-                results
-            )
-            results[0] / 1000 // Distance in kilometers
-        }
-    }
+    val address by mapViewModel.address.collectAsState()
+    val distance by mapViewModel.distance.collectAsState()
 
     Log.d("HomeScreen", "Current car: $currentCar")
     Log.d("HomeScreen", "User location: ${state.userLocation}")
     Log.d("HomeScreen", "Parking location: ${state.parkingLocation}")
     Log.d("HomeScreen", "Address: $address")
     Log.d("HomeScreen", "Distance: $distance")
+
+    LaunchedEffect(state.parkingLocation, state.userLocation) {
+        mapViewModel.fetchAddress(context, state.parkingLocation)
+        mapViewModel.calculateDistance(state.userLocation, state.parkingLocation)
+    }
 
     LaunchedEffect(Unit) {
         val fineLocationStatus = ContextCompat.checkSelfPermission(
@@ -149,9 +143,11 @@ fun HomeScreen(
                                 val parkingLocation = ParkingLocation(
                                     latitude = location.latitude,
                                     longitude = location.longitude,
+                                    address = address,
                                     carId = car.carId,
                                     userId = car.userId,
-                                    timestamp = System.currentTimeMillis().toString()
+                                    timestamp = System.currentTimeMillis(),
+                                    duration = 0
                                 )
                                 mapViewModel.onEvent(
                                     MapEvent.OnParkMyCarClicked(parkingLocation)
@@ -202,11 +198,23 @@ fun HomeScreen(
                     val intent = Intent(Intent.ACTION_VIEW, uri).apply {
                         setPackage("com.google.android.apps.maps")
                     }
-                    context.startActivity(intent)
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e("HomeScreen", "Error launching Google Maps app", e)
+                    }
                 },
                 onArrivedClick = {
-                    mapViewModel.onEvent(MapEvent.OnParkingLocationClicked(state.parkingLocation!!))
-                    showBottomSheet = false
+                    state.parkingLocation?.let { location ->
+                        val updatedLocation = location.copy(
+                            duration = System.currentTimeMillis() - location.timestamp
+                        )
+                        mapViewModel.onEvent(MapEvent.OnParkingLocationClicked(updatedLocation))
+                        currentCar?.let { car ->
+                            parkingHistoryViewModel.addParkingLocation(updatedLocation, car.carId, car.userId)
+                        }
+                        showBottomSheet = false
+                    }
                 },
             )
         }
