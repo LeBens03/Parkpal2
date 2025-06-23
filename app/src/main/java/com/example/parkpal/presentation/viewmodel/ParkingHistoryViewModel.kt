@@ -31,17 +31,6 @@ class ParkingHistoryViewModel @Inject constructor(
         }
     }
 
-    fun deleteParkingHistory(parkingHistory: ParkingHistory) {
-        viewModelScope.launch {
-            try {
-                Log.d("ParkingHistoryViewModel", "Deleting parking history: $parkingHistory")
-                parkingHistoryRepository.deleteParkingHistory(parkingHistory)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
     fun addParkingLocation(parkingLocation: ParkingLocation, carId: Long, userId: Long) {
         viewModelScope.launch {
             try {
@@ -64,6 +53,39 @@ class ParkingHistoryViewModel @Inject constructor(
 
                 _currentParkingHistory.value = updatedParkingHistory
 
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteParkingLocation(parkingLocation: ParkingLocation) {
+        viewModelScope.launch {
+            try {
+                Log.d("ParkingHistoryViewModel", "Deleting parking location: $parkingLocation")
+                val currentHistory = _currentParkingHistory.value
+                if (currentHistory != null) {
+                    val updatedParkingHistory = currentHistory.copy(
+                        parkingLocations = currentHistory.parkingLocations - parkingLocation
+                    )
+                    parkingHistoryRepository.insertParkingHistory(updatedParkingHistory)
+                    _currentParkingHistory.value = updatedParkingHistory
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun clearParkingHistory() {
+        viewModelScope.launch {
+            try {
+                val currentHistory = currentParkingHistory.value
+                Log.d("ParkingHistoryViewModel", "Deleting parking history: $currentHistory")
+                if (currentHistory != null) {
+                    parkingHistoryRepository.deleteParkingHistory(currentHistory)
+                    _currentParkingHistory.value = null
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
