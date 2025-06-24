@@ -19,6 +19,7 @@ fun BottomSheetContent(
     address: String?,
     onNavigateClick: () -> Unit,
     onArrivedClick: () -> Unit,
+    onShareClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -57,6 +58,15 @@ fun BottomSheetContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("I Arrived")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = onShareClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Share Location")
         }
     }
 }

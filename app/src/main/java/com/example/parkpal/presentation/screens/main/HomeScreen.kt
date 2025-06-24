@@ -216,6 +216,21 @@ fun HomeScreen(
                         showBottomSheet = false
                     }
                 },
+                onShareClick = {
+                    state.parkingLocation?.let { location ->
+                        val googleMapsLink = "https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}"
+                        val shareText = buildString {
+                            append("Parking Location:\n")
+                            append("Address: $address\n")
+                            append("Google Maps: $googleMapsLink")
+                        }
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        context.startActivity(Intent.createChooser(shareIntent, "Share Parking Location"))
+                    }
+                }
             )
         }
     }
