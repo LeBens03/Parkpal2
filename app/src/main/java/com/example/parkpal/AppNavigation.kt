@@ -12,9 +12,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.parkpal.presentation.BottomNavDestination
 import com.example.parkpal.presentation.BottomNavigationBar
+import com.example.parkpal.presentation.screens.main.AccountScreen
 import com.example.parkpal.presentation.screens.main.HomeScreen
 import com.example.parkpal.presentation.screens.main.ParkingHistoryScreen
-import com.example.parkpal.presentation.screens.main.ProfileScreen
+import com.example.parkpal.presentation.screens.main.PersonalInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.CarInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.GetStartedScreen
 import com.example.parkpal.presentation.screens.onboarding.SignUpScreen
@@ -34,7 +35,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val bottomNavDestinations = listOf(
         BottomNavDestination.MyCar,
         BottomNavDestination.ParkingHistory,
-        BottomNavDestination.Profile
+        BottomNavDestination.Account
     )
 
     val currentBackStackEntry = navController.currentBackStackEntryAsState()
@@ -98,11 +99,21 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 
             composable(BottomNavDestination.ParkingHistory.route) { ParkingHistoryScreen(
                 userViewModel = userViewModel,
-                onNavigateToProfile = { navController.navigate(BottomNavDestination.Profile.route) }
+                onNavigateToProfile = { navController.navigate(BottomNavDestination.Account.route) }
             ) }
 
-            composable(BottomNavDestination.Profile.route) { ProfileScreen(
+            composable(BottomNavDestination.Account.route) { AccountScreen(
+                userName = userViewModel.currentUser.value?.name ?: "John Doe",
+                onPersonalInfoClick = { navController.navigate("personalInfo") },
+                onMyVehicleClick = {  },
+                onSecurityClick = {  },
+                onLanguageClick = {  },
+                onSignOutClick = {  },
+            ) }
 
+            composable("personalInfo") { PersonalInfoScreen(
+                userViewModel = userViewModel,
+                onBack = { navController.popBackStack() }
             ) }
         }
     }

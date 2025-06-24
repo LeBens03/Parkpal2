@@ -16,7 +16,7 @@ fun BottomNavigationBar(
         listOf(
             BottomNavDestination.MyCar,
             BottomNavDestination.ParkingHistory,
-            BottomNavDestination.Profile
+            BottomNavDestination.Account
         ).forEach { destination ->
             NavigationBarItem(
                 icon = { Icon(painter = painterResource(id = destination.icon), contentDescription = destination.label) },
