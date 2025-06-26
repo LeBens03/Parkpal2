@@ -12,7 +12,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.parkpal.presentation.viewmodel.UserViewModel
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.parkpal.domain.model.User
 import androidx.compose.runtime.livedata.observeAsState
 
@@ -105,7 +103,11 @@ fun UserInfoScreen(
                     password = null,
                     phoneNumber = phoneNumber,
                     city = city,
-                    birthDate = birthDate
+                    birthDate = birthDate,
+                    gender = null,
+                    address = null,
+                    country = null,
+                    zipCode = null,
                 )
                 userViewModel.insertUser(user)
                 onSaveUser()

@@ -11,7 +11,11 @@ fun UserEntity.toUser(): User {
         password = password,
         phoneNumber = phoneNumber,
         city = city,
-        birthDate = birthDate
+        birthDate = birthDate,
+        address = address,
+        country = country,
+        zipCode = zipCode,
+        gender = gender
     )
 }
 
@@ -23,6 +27,10 @@ fun User.toUserEntity(): UserEntity {
         password = password,
         phoneNumber = phoneNumber,
         city = city,
-        birthDate = birthDate
+        birthDate = birthDate,
+        address = address,
+        country = country,
+        zipCode = zipCode,
+        gender = gender
     )
 }

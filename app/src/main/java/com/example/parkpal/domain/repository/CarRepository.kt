@@ -28,12 +28,12 @@ class CarRepository @Inject constructor(private val carDao: CarDao) {
         carDao.deleteCar(car.toCarEntity())
     }
 
-    suspend fun getCarById(carId: Int): Car {
-        Log.d("CarRepository", "Get car by id: $carId")
-        return carDao.getCarById(carId).toCar()
+    suspend fun getCarByUserId(userId: Long): List<Car> {
+        Log.d("CarRepository", "Get car by userId: $userId")
+        return carDao.getCarByUserId(userId).map { it.toCar() }
     }
 
-    suspend fun getParkingLocation(carId: Int): ParkingLocation {
+    suspend fun getParkingLocation(carId: Long): ParkingLocation {
         Log.d("CarRepository", "Get parking location for car: $carId")
         return carDao.getParkingLocation(carId).toParkingLocation()
     }

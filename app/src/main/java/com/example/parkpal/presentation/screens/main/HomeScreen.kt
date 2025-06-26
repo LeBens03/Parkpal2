@@ -38,7 +38,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.collectAsState
 import androidx.core.net.toUri
-import com.example.parkpal.presentation.BottomSheetContent
+import com.example.parkpal.presentation.HomeBottomSheetContent
 import com.example.parkpal.presentation.viewmodel.ParkingHistoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -189,7 +189,7 @@ fun HomeScreen(
             onDismissRequest = { showBottomSheet = false },
             sheetState = sheetState
         ) {
-            BottomSheetContent(
+            HomeBottomSheetContent(
                 distance = distance,
                 address = address,
                 onNavigateClick = {

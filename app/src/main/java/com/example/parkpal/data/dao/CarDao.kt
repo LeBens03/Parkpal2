@@ -21,10 +21,10 @@ interface CarDao {
     @Delete
     suspend fun deleteCar(car: CarEntity)
 
-    @Query("SELECT * FROM car_table WHERE carId = :carId")
-    suspend fun getCarById(carId: Int): CarEntity
+    @Query("SELECT * FROM car_table WHERE carId = :userId")
+    suspend fun getCarByUserId(userId: Long): List<CarEntity>
 
     @Transaction
     @Query("SELECT * FROM parking_location_table WHERE carId = :carId ")
-    suspend fun getParkingLocation(carId: Int): ParkingLocationEntity
+    suspend fun getParkingLocation(carId: Long): ParkingLocationEntity
 }

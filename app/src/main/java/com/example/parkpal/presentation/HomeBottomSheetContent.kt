@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import java.util.Locale
 
 @Composable
-fun BottomSheetContent(
+fun HomeBottomSheetContent(
     distance: Float?,
     address: String?,
     onNavigateClick: () -> Unit,

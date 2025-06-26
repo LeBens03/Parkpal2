@@ -1,10 +1,10 @@
 package com.example.parkpal.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.parkpal.domain.model.Car
-import com.example.parkpal.domain.model.User
 import com.example.parkpal.domain.repository.CarRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,6 +24,9 @@ class CarViewModel @Inject constructor(
     private val _currentCar = MutableLiveData<Car?>()
     val currentCar: MutableLiveData<Car?> = _currentCar
 
+    private val _currentUserCars = MutableStateFlow<List<Car>>(emptyList())
+    val currentUserCars: StateFlow<List<Car>> = _currentUserCars
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -36,6 +39,8 @@ class CarViewModel @Inject constructor(
             try {
                 val carId = carRepository.insertCar(car)
                 _currentCar.value = car.copy(carId = carId)
+                _currentUserCars.value = _currentUserCars.value + car
+                Log.d("CarViewModel", "Car inserted successfully")
             } catch (e: Exception) {
                 _errorMessage.emit("Failed to insert car: ${e.localizedMessage}")
             } finally {
@@ -63,7 +68,9 @@ class CarViewModel @Inject constructor(
             _isLoading.value = true
             try {
                 carRepository.deleteCar(car)
+                _currentUserCars.value = _currentUserCars.value.filter { it.carId != car.carId }
                 _currentCar.value = null
+                Log.d("CarViewModel", "Car deleted successfully")
             } catch (e: Exception) {
                 _errorMessage.emit("Failed to delete car: ${e.localizedMessage}")
             } finally {
@@ -72,13 +79,14 @@ class CarViewModel @Inject constructor(
         }
     }
 
-    fun getCarById(carId: Int) {
+    fun getCarByUserId(userId: Long) {
         viewModelScope.launch {
-            carRepository.getCarById(carId)
+            val list = carRepository.getCarByUserId(userId)
+            _currentUserCars.value = list
         }
     }
 
-    fun getParkingLocation(carId: Int) {
+    fun getParkingLocation(carId: Long) {
         viewModelScope.launch {
             carRepository.getParkingLocation(carId)
         }

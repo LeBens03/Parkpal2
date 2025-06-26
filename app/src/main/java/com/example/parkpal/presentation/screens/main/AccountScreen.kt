@@ -68,7 +68,7 @@ fun AccountScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         AccountRow("Personal Info", onPersonalInfoClick )
-        AccountRow("My Vehicle", {} )
+        AccountRow("My Vehicle", onMyVehicleClick )
 
         HorizontalDivider(thickness = 2.dp)
         Spacer(modifier = Modifier.height(16.dp))

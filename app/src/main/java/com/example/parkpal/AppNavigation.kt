@@ -14,6 +14,7 @@ import com.example.parkpal.presentation.BottomNavDestination
 import com.example.parkpal.presentation.BottomNavigationBar
 import com.example.parkpal.presentation.screens.main.AccountScreen
 import com.example.parkpal.presentation.screens.main.HomeScreen
+import com.example.parkpal.presentation.screens.main.MyVehicleScreen
 import com.example.parkpal.presentation.screens.main.ParkingHistoryScreen
 import com.example.parkpal.presentation.screens.main.PersonalInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.CarInfoScreen
@@ -105,7 +106,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             composable(BottomNavDestination.Account.route) { AccountScreen(
                 userName = userViewModel.currentUser.value?.name ?: "John Doe",
                 onPersonalInfoClick = { navController.navigate("personalInfo") },
-                onMyVehicleClick = {  },
+                onMyVehicleClick = { navController.navigate("vehicleInfo") },
                 onSecurityClick = {  },
                 onLanguageClick = {  },
                 onSignOutClick = {  },
@@ -113,6 +114,12 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 
             composable("personalInfo") { PersonalInfoScreen(
                 userViewModel = userViewModel,
+                onBack = { navController.popBackStack() }
+            ) }
+
+            composable("vehicleInfo") { MyVehicleScreen(
+                userId = userViewModel.currentUser.value?.userId ?: 0L,
+                carViewModel = carViewModel,
                 onBack = { navController.popBackStack() }
             ) }
         }
