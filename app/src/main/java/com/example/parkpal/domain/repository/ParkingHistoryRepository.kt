@@ -17,18 +17,13 @@ class ParkingHistoryRepository @Inject constructor(
         parkingHistoryDao.insertParkingHistory(parkingHistory.toParkingHistoryEntity())
     }
 
-    suspend fun deleteParkingHistory(parkingHistory: ParkingHistory) {
-        Log.d("ParkingHistoryRepository", "Delete parking history: $parkingHistory")
-        parkingHistoryDao.deleteParkingHistory(parkingHistory.toParkingHistoryEntity())
+    suspend fun deleteParkingHistoryById(historyId: Long) {
+        Log.d("ParkingHistoryRepository", "Delete parking history by ID: $historyId")
+        parkingHistoryDao.deleteParkingHistoryById(historyId)
     }
 
-    suspend fun getParkingHistoryByUserId(userId: Long): ParkingHistory {
+    suspend fun getParkingHistoryByUserId(userId: Long): ParkingHistory? {
         Log.d("ParkingHistoryRepository", "Get parking history by user ID: $userId")
-        return parkingHistoryDao.getParkingHistoryByUserId(userId).toParkingHistory()
-    }
-
-    suspend fun getParkingHistoryByCarId(carId: Long): ParkingHistory {
-        Log.d("ParkingHistoryRepository", "Get parking history by car ID: $carId")
-        return parkingHistoryDao.getParkingHistoryByCarId(carId).toParkingHistory()
+        return parkingHistoryDao.getParkingHistoryByUserId(userId)?.toParkingHistory()
     }
 }

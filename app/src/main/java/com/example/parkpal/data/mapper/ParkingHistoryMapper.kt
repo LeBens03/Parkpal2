@@ -7,7 +7,6 @@ import com.example.parkpal.data.entity.ParkingHistoryEntity
 fun ParkingHistoryEntity.toParkingHistory(): ParkingHistory{
     return ParkingHistory(
         userId = userId,
-        carId = carId,
         parkingLocations = parkingLocations
     )
 }
@@ -15,7 +14,6 @@ fun ParkingHistoryEntity.toParkingHistory(): ParkingHistory{
 fun ParkingHistory.toParkingHistoryEntity(): ParkingHistoryEntity{
     return ParkingHistoryEntity(
         userId = userId,
-        carId = carId,
         parkingLocations = parkingLocations
     )
 }

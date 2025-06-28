@@ -1,5 +1,6 @@
 package com.example.parkpal.presentation.screens.main
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
@@ -16,7 +17,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,7 +38,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.collectAsState
 import androidx.core.net.toUri
+import com.example.parkpal.domain.model.Car
 import com.example.parkpal.presentation.HomeBottomSheetContent
+import com.example.parkpal.presentation.ShowCarsBottomSheetContent
 import com.example.parkpal.presentation.viewmodel.ParkingHistoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,8 +48,7 @@ import com.example.parkpal.presentation.viewmodel.ParkingHistoryViewModel
 fun HomeScreen(
     mapViewModel: MapViewModel = hiltViewModel(),
     carViewModel: CarViewModel,
-    parkingHistoryViewModel: ParkingHistoryViewModel,
-    onNavigateToParkingHistory: () -> Unit
+    parkingHistoryViewModel: ParkingHistoryViewModel
 ) {
     val state = mapViewModel.state
     val uiSettings = remember { MapUiSettings(
@@ -67,7 +68,7 @@ fun HomeScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
-    val currentCar by carViewModel.currentCar.observeAsState()
+    val currentUserCars by carViewModel.currentUserCars.collectAsState()
 
     var permissionsGranted by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -75,15 +76,19 @@ fun HomeScreen(
     val requestPermissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
-            permissionsGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                    permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            permissionsGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                    permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         }
     )
 
     val address by mapViewModel.address.collectAsState()
     val distance by mapViewModel.distance.collectAsState()
 
-    Log.d("HomeScreen", "Current car: $currentCar")
+    var showCarSelectorSheet by remember { mutableStateOf(false) }
+    var selectedCar by remember { mutableStateOf<Car?>(null) }
+
+    Log.d("HomeScreen", "Current User cars: $currentUserCars")
+    Log.d("HomeScreen", "Selected Car: $selectedCar")
     Log.d("HomeScreen", "User location: ${state.userLocation}")
     Log.d("HomeScreen", "Parking location: ${state.parkingLocation}")
     Log.d("HomeScreen", "Address: $address")
@@ -97,11 +102,11 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         val fineLocationStatus = ContextCompat.checkSelfPermission(
             context,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION
         )
         val coarseLocationStatus = ContextCompat.checkSelfPermission(
             context,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
         if (fineLocationStatus == PackageManager.PERMISSION_GRANTED ||
             coarseLocationStatus == PackageManager.PERMISSION_GRANTED
@@ -110,8 +115,8 @@ fun HomeScreen(
         } else {
             requestPermissionsLauncher.launch(
                 arrayOf(
-                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             )
         }
@@ -138,22 +143,7 @@ fun HomeScreen(
             if (state.parkingLocation == null && state.userLocation != null) {
                 FloatingActionButton(
                     onClick = {
-                        state.userLocation.let { location ->
-                            currentCar?.let { car ->
-                                val parkingLocation = ParkingLocation(
-                                    latitude = location.latitude,
-                                    longitude = location.longitude,
-                                    address = address,
-                                    carId = car.carId,
-                                    userId = car.userId,
-                                    timestamp = System.currentTimeMillis(),
-                                    duration = 0
-                                )
-                                mapViewModel.onEvent(
-                                    MapEvent.OnParkMyCarClicked(parkingLocation)
-                                )
-                            }
-                        }
+                        showCarSelectorSheet = true
                     },
                 ) {
                     Text("Park My Car")
@@ -210,8 +200,8 @@ fun HomeScreen(
                             duration = System.currentTimeMillis() - location.timestamp
                         )
                         mapViewModel.onEvent(MapEvent.OnParkingLocationClicked(updatedLocation))
-                        currentCar?.let { car ->
-                            parkingHistoryViewModel.addParkingLocation(updatedLocation, car.carId, car.userId)
+                        selectedCar?.let { car ->
+                            parkingHistoryViewModel.addParkingLocation(updatedLocation, car.userId)
                         }
                         showBottomSheet = false
                     }
@@ -230,6 +220,41 @@ fun HomeScreen(
                         }
                         context.startActivity(Intent.createChooser(shareIntent, "Share Parking Location"))
                     }
+                }
+            )
+        }
+    }
+
+    if (showCarSelectorSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showCarSelectorSheet = false
+                selectedCar = null
+            },
+        ) {
+            ShowCarsBottomSheetContent(
+                cars = currentUserCars,
+                onCarSelected = { car ->
+                    selectedCar = car
+                    if (state.parkingLocation == null && state.userLocation != null) {
+                        state.userLocation.let { location ->
+                            selectedCar?.let { car ->
+                                val parkingLocation = ParkingLocation(
+                                    latitude = location.latitude,
+                                    longitude = location.longitude,
+                                    address = address,
+                                    carId = car.carId,
+                                    userId = car.userId,
+                                    timestamp = System.currentTimeMillis(),
+                                    duration = 0
+                                )
+                                mapViewModel.onEvent(
+                                    MapEvent.OnParkMyCarClicked(parkingLocation)
+                                )
+                            }
+                        }
+                    }
+                    showCarSelectorSheet = false
                 }
             )
         }

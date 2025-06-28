@@ -3,8 +3,11 @@ package com.example.parkpal
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,14 +17,15 @@ import com.example.parkpal.presentation.BottomNavDestination
 import com.example.parkpal.presentation.BottomNavigationBar
 import com.example.parkpal.presentation.screens.main.AccountScreen
 import com.example.parkpal.presentation.screens.main.HomeScreen
+import com.example.parkpal.presentation.screens.main.SignInScreen
 import com.example.parkpal.presentation.screens.main.MyVehicleScreen
 import com.example.parkpal.presentation.screens.main.ParkingHistoryScreen
 import com.example.parkpal.presentation.screens.main.PersonalInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.CarInfoScreen
-import com.example.parkpal.presentation.screens.onboarding.GetStartedScreen
-import com.example.parkpal.presentation.screens.onboarding.SignUpScreen
 import com.example.parkpal.presentation.screens.onboarding.UserInfoScreen
 import com.example.parkpal.presentation.screens.onboarding.WelcomeScreen
+import com.example.parkpal.presentation.viewmodel.AuthState
+import com.example.parkpal.presentation.viewmodel.AuthViewModel
 import com.example.parkpal.presentation.viewmodel.CarViewModel
 import com.example.parkpal.presentation.viewmodel.ParkingHistoryViewModel
 import com.example.parkpal.presentation.viewmodel.UserViewModel
@@ -31,6 +35,22 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val userViewModel: UserViewModel = hiltViewModel()
     val carViewModel: CarViewModel = hiltViewModel()
     val parkingHistoryViewModel: ParkingHistoryViewModel = hiltViewModel()
+    val authViewModel: AuthViewModel = viewModel()
+
+    val authState = authViewModel.authState.collectAsState()
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is AuthState.Unauthenticated -> {
+                userViewModel.clearCurrentUser()
+                carViewModel.clearCarOfCurrentUser()
+            }
+            is AuthState.Authenticated -> {
+                userViewModel.fetchCurrentUser()
+                carViewModel.fetchCarsOfCurrentUser()
+            }
+            else -> Unit
+        }
+    }
 
     // List of destinations where the Bottom Navigation Bar is visible
     val bottomNavDestinations = listOf(
@@ -67,40 +87,37 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("welcome") { WelcomeScreen(
-                onContinueClicked = { navController.navigate("userInfo") }
+                onContinueClicked = { navController.navigate("signIn") }
+            ) }
+
+            composable("signIn") { SignInScreen(
+                authViewModel = authViewModel,
+                onSignIn = { navController.navigate(BottomNavDestination.MyCar.route) },
+                onSignUp = { navController.navigate("userInfo") }
             ) }
 
             composable("userInfo") { UserInfoScreen(
                 userViewModel = userViewModel,
-                onSaveUser = { navController.navigate("carInfo") }
+                authViewModel = authViewModel,
+                onSaveUser = { navController.navigate("carInfo") },
+                onBack = { navController.popBackStack() }
             ) }
 
             composable("carInfo") { CarInfoScreen(
                 userViewModel = userViewModel,
                 carViewModel = carViewModel,
-                onCarSaved = { navController.navigate("getStarted") }
-            ) }
-
-            composable("getStarted") { GetStartedScreen(
-                onSignUpClick = { navController.navigate("signUp") },
-                onHomeClick = { navController.navigate(BottomNavDestination.MyCar.route) }
-            ) }
-
-            composable("signUp") { SignUpScreen(
-                userViewModel = userViewModel,
-                onSignUp = { navController.navigate(BottomNavDestination.MyCar.route) },
-                onCancel = { navController.navigate("getStarted") }
+                onCarSaved = { navController.navigate(BottomNavDestination.MyCar.route) }
             ) }
 
             composable(BottomNavDestination.MyCar.route) { HomeScreen(
                 carViewModel = carViewModel,
-                parkingHistoryViewModel = parkingHistoryViewModel,
-                onNavigateToParkingHistory = { navController.navigate(BottomNavDestination.ParkingHistory.route) }
+                parkingHistoryViewModel = parkingHistoryViewModel
             ) }
 
             composable(BottomNavDestination.ParkingHistory.route) { ParkingHistoryScreen(
-                userViewModel = userViewModel,
-                onNavigateToProfile = { navController.navigate(BottomNavDestination.Account.route) }
+                userId = userViewModel.currentUser.value?.userId ?: 0L,
+                carViewModel = carViewModel,
+                parkingHistoryViewModel = parkingHistoryViewModel
             ) }
 
             composable(BottomNavDestination.Account.route) { AccountScreen(
@@ -109,7 +126,10 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 onMyVehicleClick = { navController.navigate("vehicleInfo") },
                 onSecurityClick = {  },
                 onLanguageClick = {  },
-                onSignOutClick = {  },
+                onSignOutClick = {
+                    authViewModel.signOut()
+                    navController.navigate("signIn")
+                },
             ) }
 
             composable("personalInfo") { PersonalInfoScreen(

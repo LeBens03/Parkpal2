@@ -16,16 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.parkpal.presentation.viewmodel.ParkingHistoryViewModel
-import com.example.parkpal.presentation.viewmodel.UserViewModel
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.parkpal.domain.model.ParkingLocation
+import com.example.parkpal.presentation.viewmodel.CarViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -33,30 +31,28 @@ import java.util.concurrent.TimeUnit
 
 @Composable
 fun ParkingHistoryScreen(
-    userViewModel: UserViewModel,
-    parkingHistoryViewModel: ParkingHistoryViewModel = hiltViewModel(),
-    onNavigateToProfile: () -> Unit
+    userId: Long,
+    carViewModel: CarViewModel,
+    parkingHistoryViewModel: ParkingHistoryViewModel
 ) {
-    val currentUser by userViewModel.currentUser.observeAsState()
     val parkingHistory by parkingHistoryViewModel.currentParkingHistory.collectAsState()
     val locations = parkingHistory?.parkingLocations ?: emptyList()
+    val carIds = locations.map { it.carId }
 
-    LaunchedEffect(currentUser) {
-        currentUser?.let {
-            parkingHistoryViewModel.fetchParkingHistory(it.userId)
+    LaunchedEffect(userId) {
+        parkingHistoryViewModel.fetchParkingHistory(userId)
+    }
+
+    LaunchedEffect(carIds) {
+        if (carIds.isNotEmpty()) {
+            carViewModel.fetchLicensePlatesForCars(carIds)
         }
     }
 
-    Log.d("ParkingHistoryScreen", "Current user: $currentUser")
+    Log.d("ParkingHistoryScreen", "Current userId: $userId")
     Log.d("ParkingHistoryScreen", "Parking history: $parkingHistory")
 
-    if (currentUser == null) {
-        Text(
-            text = "Loading user information...",
-            modifier = Modifier.fillMaxSize(),
-            textAlign = TextAlign.Center
-        )
-    } else if (locations.isEmpty()) {
+    if (locations.isEmpty()) {
         Text(
             text = "No parking history found.",
             modifier = Modifier.fillMaxSize(),
@@ -69,7 +65,7 @@ fun ParkingHistoryScreen(
                 .padding(16.dp)
         ){
             Button(
-                onClick = { parkingHistoryViewModel.clearParkingHistory() },
+                onClick = { parkingHistoryViewModel.clearParkingHistory(userId = userId) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Delete All History")
@@ -81,7 +77,7 @@ fun ParkingHistoryScreen(
                     .padding(16.dp)
             ) {
                 items(locations) { location ->
-                    ParkingLocationCard(location, parkingHistoryViewModel)
+                    ParkingLocationCard(location, parkingHistoryViewModel, carViewModel)
                 }
             }
         }
@@ -89,7 +85,11 @@ fun ParkingHistoryScreen(
 }
 
 @Composable
-fun ParkingLocationCard(location: ParkingLocation, parkingHistoryViewModel: ParkingHistoryViewModel) {
+fun ParkingLocationCard(location: ParkingLocation, parkingHistoryViewModel: ParkingHistoryViewModel, carViewModel: CarViewModel) {
+
+    val licensePlates by carViewModel.licensePlates.collectAsState()
+    val licensePlate = licensePlates[location.carId] ?: "Unknown"
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,6 +115,11 @@ fun ParkingLocationCard(location: ParkingLocation, parkingHistoryViewModel: Park
 
             Text(
                 text = "Date: ${formatTimestamp(location.timestamp)}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                text = "Car Plate: $licensePlate",
                 style = MaterialTheme.typography.bodyMedium
             )
 

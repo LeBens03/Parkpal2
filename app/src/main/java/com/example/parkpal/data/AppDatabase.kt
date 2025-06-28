@@ -18,7 +18,7 @@ import com.example.parkpal.data.entity.UserEntity
         ParkingLocationEntity::class,
         ParkingHistoryEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

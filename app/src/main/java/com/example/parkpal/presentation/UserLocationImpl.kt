@@ -64,7 +64,6 @@ class UserLocationImpl @Inject constructor(
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     result.locations.lastOrNull()?.let { location ->
-                        Log.d("UserLocationImpl", "Emitting location: ${location.latitude}, ${location.longitude}")
                         trySend(location).isSuccess // Emit location safely
                     } ?: Log.e("UserLocationImpl", "No location available in result")
                 }

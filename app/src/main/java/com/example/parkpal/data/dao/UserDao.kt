@@ -22,4 +22,7 @@ interface UserDao {
 
     @Query("SELECT * FROM user_table")
     fun getAllUsers(): Flow<List<UserEntity>>
+
+    @Query("SELECT * FROM user_table WHERE email = :email")
+    suspend fun getUserByEmail(email: String): UserEntity?
 }

@@ -9,10 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -24,9 +25,16 @@ import com.example.parkpal.ui.theme.LogoSize
 import com.example.parkpal.ui.theme.MarginMedium
 import com.example.parkpal.ui.theme.ParkpalTheme
 import com.example.parkpal.ui.theme.SpaceMedium
+import kotlinx.coroutines.delay
 
 @Composable
 fun WelcomeScreen(onContinueClicked: () -> Unit ) {
+
+    LaunchedEffect(key1 = true) {
+        delay(3000)
+        onContinueClicked()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,7 +43,6 @@ fun WelcomeScreen(onContinueClicked: () -> Unit ) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // App Logo
         Image(
             painter = painterResource(id = R.drawable.parkpal_logo),
             contentDescription = stringResource(id = R.string.app_logo_content_description),
@@ -44,7 +51,6 @@ fun WelcomeScreen(onContinueClicked: () -> Unit ) {
 
         Spacer(modifier = Modifier.height(SpaceMedium))
 
-        // Welcome Text
         Text(
             text = stringResource(id = R.string.welcome_message),
             style = MaterialTheme.typography.headlineMedium
@@ -65,10 +71,7 @@ fun WelcomeScreen(onContinueClicked: () -> Unit ) {
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Continue Button
-        Button(onClick = { onContinueClicked() }) {
-            Text(text = stringResource(id = R.string.continue_button_text))
-        }
+        CircularProgressIndicator()
     }
 }
 

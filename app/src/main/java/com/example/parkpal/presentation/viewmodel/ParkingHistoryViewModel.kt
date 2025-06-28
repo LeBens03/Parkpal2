@@ -25,29 +25,29 @@ class ParkingHistoryViewModel @Inject constructor(
             try {
                 val history = parkingHistoryRepository.getParkingHistoryByUserId(userId)
                 _currentParkingHistory.value = history
+                Log.d("ParkingHistoryViewModel", "Fetched parking history: $history")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    fun addParkingLocation(parkingLocation: ParkingLocation, carId: Long, userId: Long) {
+    fun addParkingLocation(parkingLocation: ParkingLocation, userId: Long) {
         viewModelScope.launch {
             try {
                 Log.d("ParkingHistoryViewModel", "Adding parking location to parking history: $parkingLocation")
 
                 val currentHistory = _currentParkingHistory.value
-                val updatedParkingHistory = if (currentHistory != null) {
-                    currentHistory.copy(
-                        parkingLocations = currentHistory.parkingLocations + parkingLocation
-                    )
-                } else {
-                    ParkingHistory(
+                Log.d("ParkingHistoryViewModel", "Current parking history: $currentHistory")
+
+                val updatedParkingHistory = currentHistory?.copy(
+                    parkingLocations = currentHistory.parkingLocations + parkingLocation
+                )
+                    ?: ParkingHistory(
                         userId = userId,
-                        carId = carId,
                         parkingLocations = listOf(parkingLocation)
                     )
-                }
+                Log.d("ParkingHistoryViewModel", "Updated parking history: $updatedParkingHistory")
 
                 parkingHistoryRepository.insertParkingHistory(updatedParkingHistory)
 
@@ -77,13 +77,13 @@ class ParkingHistoryViewModel @Inject constructor(
         }
     }
 
-    fun clearParkingHistory() {
+    fun clearParkingHistory(userId: Long) {
         viewModelScope.launch {
             try {
                 val currentHistory = currentParkingHistory.value
                 Log.d("ParkingHistoryViewModel", "Deleting parking history: $currentHistory")
                 if (currentHistory != null) {
-                    parkingHistoryRepository.deleteParkingHistory(currentHistory)
+                    parkingHistoryRepository.deleteParkingHistoryById(userId)
                     _currentParkingHistory.value = null
                 }
             } catch (e: Exception) {

@@ -80,7 +80,7 @@ fun AccountScreen(
         HorizontalDivider(thickness = 2.dp)
         Spacer(modifier = Modifier.height(16.dp))
 
-        AccountRow("Sign Out", {}, textColor = MaterialTheme.colorScheme.error)
+        AccountRow("Sign Out", onSignOutClick, textColor = MaterialTheme.colorScheme.error)
     }
 
 }
@@ -90,8 +90,8 @@ fun AccountRow(
     title: String,
     onClick: () -> Unit,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
-    leadingIcon: ImageVector = Icons.Default.AccountCircle, // Replace with your desired icon
-    trailingIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowForward // Replace with your desired icon
+    leadingIcon: ImageVector = Icons.Default.AccountCircle,
+    trailingIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowForward
 ) {
     Row(
         modifier = Modifier
@@ -101,7 +101,6 @@ fun AccountRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Leading Icon
         Icon(
             imageVector = leadingIcon,
             contentDescription = null,
@@ -109,7 +108,6 @@ fun AccountRow(
             modifier = Modifier.padding(start = 16.dp)
         )
 
-        // Title
         Text(
             text = title,
             color = textColor,
@@ -117,7 +115,6 @@ fun AccountRow(
             modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
         )
 
-        // Trailing Icon
         Icon(
             imageVector = trailingIcon,
             contentDescription = null,
